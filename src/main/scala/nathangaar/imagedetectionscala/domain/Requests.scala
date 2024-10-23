@@ -13,7 +13,7 @@ object Requests:
     imageDetectionEnabled: Boolean
   )
 
-  implicit val analyzeImageRequestDecoder: Decoder[AnalyzeImageRequest] = new Decoder[AnalyzeImageRequest] {
+  given analyzeImageRequestDecoder: Decoder[AnalyzeImageRequest] = new Decoder[AnalyzeImageRequest] {
     final def apply(c: HCursor): Decoder.Result[AnalyzeImageRequest] = for {
       imageUrl              <- c.downField("imageUrl").as[String]
       label                 <- c.downField("label").as[Option[String]]
