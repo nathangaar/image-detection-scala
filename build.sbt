@@ -47,7 +47,8 @@ lazy val root = (project in file("."))
       "org.tpolecat"          %% "doobie-scalatest"    % "1.0.0-RC4"            % "test",
       "com.github.pureconfig" %% "pureconfig-core"     % "0.17.7",
       "com.github.pureconfig" %% "pureconfig-http4s"   % "0.17.7",
-      "org.flywaydb"           % "flyway-core"         % "9.22.0"
+      "org.flywaydb"           % "flyway-core"         % "9.22.0",
+      "org.fusesource.jansi"   % "jansi"               % "2.4.0"
     ),
     assembly / assemblyMergeStrategy := {
       case "module-info.class" => MergeStrategy.discard
