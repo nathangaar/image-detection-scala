@@ -54,41 +54,39 @@ object ImageDetectionScalaRoutes:
       case req @ POST -> Root / "images" =>
         req.as[AnalyzeImageRequest].attempt.flatMap {
           case Right(analyzeImageReq) => {
-            for {
-              result <- AnalysisRequestValidator.fromRequest(analyzeImageReq) match {
-                          case Validated.Valid(validReq) =>
-                            for {
-                              analysisResult <- if (validReq.imageDetectionEnabled) {
-                                                  Images.analyze(validReq.imageUrl).map(Option(_))
-                                                } else { Applicative[F].pure(None) }
-                              finalLabel = validReq.label match {
-                                             case Some(definedLabel) => definedLabel
-                                             case _ =>
-                                               analysisResult.fold(UndefinedLabel) { analysis =>
-                                                 analysis.result.tags
-                                                   .sortBy(tag => -tag.confidence.confidence)
-                                                   .headOption
-                                                   .map(_.tag.en.en)
-                                                   .getOrElse(UndefinedLabel)
-                                               }
-                                           }
-                              image <- ImagesRepository.insert(
-                                         Commands.InsertImage(
-                                           imageUrl = ImageUrl(validReq.imageUrl),
-                                           metaData = analysisResult.fold(Json.obj())(_.asJson),
-                                           label = Label(finalLabel)
-                                         )
-                                       )
-                              result <- Ok(image)
-                            } yield result
-                          case Validated.Invalid(errors) =>
-                            BadRequest(
-                              Json.obj(
-                                "errors" -> Json.arr(errors.toList.map(error => Json.fromString(error.message)): _*)
-                              )
-                            )
-                        }
-            } yield result
+            AnalysisRequestValidator.fromRequest(analyzeImageReq) match {
+              case Validated.Valid(validReq) =>
+                for {
+                  analysisResult <- if (validReq.imageDetectionEnabled) {
+                                      Images.analyze(validReq.imageUrl).map(Option(_))
+                                    } else { Applicative[F].pure(None) }
+                  finalLabel = validReq.label match {
+                                 case Some(definedLabel) => definedLabel
+                                 case _ =>
+                                   analysisResult.fold(UndefinedLabel) { analysis =>
+                                     analysis.result.tags
+                                       .sortBy(tag => -tag.confidence.confidence)
+                                       .headOption
+                                       .map(_.tag.en.en)
+                                       .getOrElse(UndefinedLabel)
+                                   }
+                               }
+                  image <- ImagesRepository.insert(
+                             Commands.InsertImage(
+                               imageUrl = ImageUrl(validReq.imageUrl),
+                               metaData = analysisResult.fold(Json.obj())(_.asJson),
+                               label = Label(finalLabel)
+                             )
+                           )
+                  result <- Ok(image)
+                } yield result
+              case Validated.Invalid(errors) =>
+                BadRequest(
+                  Json.obj(
+                    "errors" -> Json.arr(errors.toList.map(error => Json.fromString(error.message)): _*)
+                  )
+                )
+            }
           }
           case Left(error) =>
             BadRequest(Json.obj("errors" -> Json.fromString(s"Invalid request: ${error.getMessage}")))
