@@ -81,7 +81,7 @@ object ImageDetectionScalaRoutes:
                   result <- Ok(image)
                 } yield result
               case Validated.Invalid(errors) =>
-                BadRequest(
+                UnprocessableEntity(
                   Json.obj(
                     "errors" -> Json.arr(errors.toList.map(error => Json.fromString(error.message)): _*)
                   )

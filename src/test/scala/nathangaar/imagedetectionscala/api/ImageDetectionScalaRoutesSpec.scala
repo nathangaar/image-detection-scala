@@ -139,7 +139,7 @@ class ImageDetectionScalaRoutesSpec extends CatsEffectSuite:
       response <- routes.run(request)
       body     <- response.as[Json]
     } yield {
-      assertEquals(response.status, Status.BadRequest)
+      assertEquals(response.status, Status.UnprocessableEntity)
       assertEquals(
         body.noSpaces,
         """{"errors":["Invalid URL format"]}"""
