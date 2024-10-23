@@ -27,5 +27,5 @@ object Requests:
     }
   }
 
-  implicit def analyzeImageRequestDecoder[F[_]: Concurrent]: EntityDecoder[F, AnalyzeImageRequest] =
+  given analyzeImageRequestDecoder[F[_]: Concurrent]: EntityDecoder[F, AnalyzeImageRequest] =
     jsonOf[F, AnalyzeImageRequest]
